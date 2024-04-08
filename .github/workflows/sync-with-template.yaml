@@ -1,5 +1,5 @@
 # File: .github/workflows/template-sync.yml
-
+name: "Sync with Template"
 on:
     # cronjob trigger
   schedule:
@@ -18,6 +18,8 @@ jobs:
       # To use this repository's private action, you must check out the repository
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+            token: ${{ secrets.GIT_SYNC_TEMPLATE }}
         # https://github.com/actions/checkout#usage
         # uncomment if you use submodules within the repository
         # with:
