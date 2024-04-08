@@ -1,3 +1,8 @@
+import os
+
+from modules.airtable_module import AirtableModule
+
+
 def create_lead_reference():
     tool_name = "create_lead"
     tool_description = "Capture lead details of the user."
@@ -17,7 +22,10 @@ def create_lead_reference():
     )
 
 
+# {"name": string, "phone": string, "email": string}
 def create_lead(tool_request):
-    print(tool_request)
+    client = AirtableModule()
 
-    return True, "Daora"
+    response = client.create_record("Leads", tool_request);
+
+    return True, response
