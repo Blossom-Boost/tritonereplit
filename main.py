@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from helpers.client import OpenAIHelper
 import json
+from time import sleep
 
 app = Flask(__name__)
 
@@ -27,9 +28,17 @@ def chat_message():
 
   print(f"[NEW MESSAGE][THREAD {thread_id}] {user_input}")
 
-  run = openAiHelper.process_message(user_input, thread_id)
+  run, thread_id = openAiHelper.process_message(user_input, thread_id)
 
-  return jsonify({"run_id": run.id})
+  return jsonify({"run_id": run.id, "thread_id": thread_id})
+
+
+@app.route('/delay', methods=['GET'])
+def delay():
+  delay_seconds = 3
+  print(f"[API DELAY] Delaying for {delay_seconds} seconds...")
+  sleep(delay_seconds)
+  return jsonify({"delay": delay_seconds})
 
 
 @app.route('/get_run', methods=['POST'])

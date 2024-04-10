@@ -7,9 +7,10 @@ authors = ["Your Name <you@example.com>"]
 [tool.poetry.dependencies]
 python = ">=3.10.0"
 packaging = "^23.2"
-requests = "^2.31.0"
 flask = "^3.0.2"
 openai = "^1.12.0"
+airtable = "0.4.8"
+requests = "2.31.0"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

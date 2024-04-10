@@ -1,6 +1,6 @@
 import time
 
-from openai import OpenAI
+from openai import OpenAI, NotFoundError
 import json
 import os
 
@@ -66,9 +66,16 @@ class OpenAIHelper:
     return self.assistant_id
 
   def process_message(self, input, thread_id):
-    self.client.beta.threads.messages.create(thread_id=thread_id,
-                                             role="user",
-                                             content=input)
+    try:
+      self.client.beta.threads.messages.create(thread_id=thread_id,
+                                               role="user",
+                                               content=input)
+    except NotFoundError as notFound:
+      print(
+          f"[CLIENT THREAD][THREAD {thread_id}] Thread not found: {notFound}, creating new thread"
+      )
+      thread = self.client.beta.threads.create()
+      thread_id = thread.id
 
     run = self.client.beta.threads.runs.create(thread_id=thread_id,
                                                assistant_id=self.assistant_id)
@@ -77,7 +84,7 @@ class OpenAIHelper:
         f"[MESSAGE PROCESSING][THREAD {thread_id}][RUN {run.id}] Processing new message"
     )
 
-    return run
+    return run, thread_id
 
   def get_run(self, thread_id, run_id):
     run = self.client.beta.threads.runs.retrieve(run_id=run_id,
@@ -135,9 +142,7 @@ class OpenAIHelper:
       return "processing", "not_completed"
 
     if run.status == 'failed':
-      print(
-          f"[RUN FAILED][THREAD {run.thread_id}][RUN {run.id}] {run.error_message}"
-      )
+      print(f"[RUN FAILED][THREAD {run.thread_id}][RUN {run.id}] {run}")
       return "error", "Não consegui processar sua mensagem."
 
     return "error", "Não consegui processar sua mensagem."
