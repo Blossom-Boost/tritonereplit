@@ -1,7 +1,7 @@
-from flask import Flask, jsonify, request
-from helpers.client import OpenAIHelper
-import json
+import os
 from time import sleep
+from helpers.client import OpenAIHelper
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -11,56 +11,80 @@ openAiClient = openAiHelper.client
 
 @app.route('/start_chat', methods=['GET'])
 def start_chat():
-  thread = openAiClient.beta.threads.create()
-  print(f"New chat conversation thread started: {thread.id}")
+    thread = openAiClient.beta.threads.create()
+    print(f"New chat conversation thread started: {thread.id}")
 
-  return jsonify({"thread_id": thread.id})
+    return jsonify({"thread_id": thread.id})
 
 
 @app.route('/chat_message', methods=['POST'])
 def chat_message():
-  data = request.json
-  thread_id = data.get('thread_id')
-  user_input = data.get('user_message', '')
+    data = request.json
+    thread_id = data.get('thread_id')
+    user_input = data.get('user_message', '')
 
-  if thread_id is None:
-    return jsonify({"error": "Missing thread_id"}), 400
+    if thread_id is None:
+        return jsonify({"error": "Missing thread_id"}), 400
 
-  print(f"[NEW MESSAGE][THREAD {thread_id}] {user_input}")
+    print(f"[NEW MESSAGE][THREAD {thread_id}] {user_input}")
 
-  run, thread_id = openAiHelper.process_message(user_input, thread_id)
+    run, thread_id = openAiHelper.process_message(user_input, thread_id)
 
-  return jsonify({"run_id": run.id, "thread_id": thread_id})
+    return jsonify({"run_id": run.id, "thread_id": thread_id})
 
 
 @app.route('/delay', methods=['GET'])
 def delay():
-  delay_seconds = 3
-  print(f"[API DELAY] Delaying for {delay_seconds} seconds...")
-  sleep(delay_seconds)
-  return jsonify({"delay": delay_seconds})
+    delay_seconds = 3
+    print(f"[API DELAY] Delaying for {delay_seconds} seconds...")
+    sleep(delay_seconds)
+    return jsonify({"delay": delay_seconds})
 
 
 @app.route('/get_run', methods=['POST'])
 def get_run():
-  data = request.json
-  thread_id = data.get('thread_id')
-  run_id = data.get('run_id')
+    data = request.json
+    thread_id = data.get('thread_id')
+    run_id = data.get('run_id')
 
-  print(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
+    print(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
 
-  if not thread_id or not run_id:
-    return jsonify({"response": "Thread or Run ID is missing"}), 400
+    if not thread_id or not run_id:
+        return jsonify({"response": "Thread or Run ID is missing"}), 400
 
-  run = openAiHelper.get_run(thread_id=thread_id, run_id=run_id)
+    run = openAiHelper.get_run(thread_id=thread_id, run_id=run_id)
 
-  status, message = openAiHelper.process_run(run)
+    status, message = openAiHelper.process_run(run)
 
-  return jsonify({
-      "status": status,
-      "message": message
-  }), 200 if status != "failed" else 500
+    return jsonify({
+        "status": status,
+        "message": message
+    }), 200 if status != "failed" else 500
+
+
+@app.route('/background', methods=['POST'])
+def background_run():
+    data = request.json
+    thread_id = data.get('thread_id')
+    run_id = data.get('run_id')
+
+    print(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
+
+    if not thread_id or not run_id:
+        return jsonify({"response": "Thread or Run ID is missing"}), 200
+
+    run = openAiHelper.get_run(thread_id=thread_id, run_id=run_id)
+
+    status, message = openAiHelper.process_run(run)
+
+    should_continue = openAiHelper.convert_to_background_run_response(status)
+
+    return jsonify({
+        "status": status,
+        "message": message,
+        "should_continue": should_continue
+    }), 200 if not should_continue else 425
 
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 8080))
