@@ -80,7 +80,7 @@ def background_run():
 
     status, message = openAiHelper.process_run(run)
 
-    should_continue = openAiHelper.convert_to_background_run_response(status)
+    should_continue = openAiHelper.convert_to_background_run_response(status, run.usage, run.id)
 
     return jsonify({
         "status": status,

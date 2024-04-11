@@ -6,6 +6,7 @@ import json
 import os
 
 from openai.types.beta.threads import Run
+import modules.airtable_module
 
 import helpers.cloud_tasks
 from helpers.instructions import instructions
@@ -157,10 +158,28 @@ class OpenAIHelper:
 
         return "error", "Não consegui processar sua mensagem."
 
-    @staticmethod
-    def convert_to_background_run_response(response_status: str):
+    def convert_to_background_run_response(self, response_status: str, usage, run_id: str):
         match response_status:
             case "error" | "completed":
+                self.save_usage_into_database(usage, run_id)
                 return False
             case "processing":
                 return True
+
+    @staticmethod
+    def save_usage_into_database(usage, run_id: str):
+        if not usage:
+            logger.info("[USAGE] No usage response found")
+            logger.info(usage)
+            return None
+
+        print(f"[USAGE] {usage.total_tokens}")
+
+        airtableClient = modules.airtable_module.AirtableModule()
+
+        # [isAlreadyDefined] = airtableClient.get("Usage", record_id=run_id, max_records=1)
+        #
+        # if isAlreadyDefined:
+        #     return
+
+        airtableClient.create_record("Usage", {"client": "Default", "tokens": usage.total_tokens, "run_id": run_id})
