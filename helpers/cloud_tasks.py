@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 
 import google.cloud.tasks_v2
@@ -16,6 +17,8 @@ SERVICE_URL = os.getenv('SERVICE_URL', 'https://tritone-oygb22tp6q-uc.a.run.app'
 client = CloudTasksClient()
 parent = client.queue_path(TASK_PROJECT_ID, TASK_LOCATION, TASK_QUEUE)
 
+logger = logging.getLogger('waitress')
+logger.setLevel(logging.INFO)
 
 def add_task(
     task: google.cloud.tasks_v2.types.Task,
@@ -36,17 +39,10 @@ def add_task(
         duration.FromSeconds(deadline_in_seconds)
         task.dispatch_deadline = duration
 
-    response = client.create_task(
-        tasks_v2.CreateTaskRequest(
-            parent=parent,
-            task=task,
-        )
-    )
-
     response = client.create_task(parent=parent, task=task)
     eta = response.schedule_time.strftime("%m/%d/%Y, %H:%M:%S")
 
-    print(f"Task {response.name} enqueued, ETA {eta}.")
+    logger.info(f"[CLOUD TASKS][ADD TASK][TASK {response.name}] Task enqueued, ETA {eta}.")
 
 
 def bot_start_processing_run(thread_id: str, run_id: str):

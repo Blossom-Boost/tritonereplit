@@ -1,3 +1,4 @@
+import logging
 import os
 from time import sleep
 from helpers.client import OpenAIHelper
@@ -8,11 +9,13 @@ app = Flask(__name__)
 openAiHelper = OpenAIHelper()
 openAiClient = openAiHelper.client
 
+logger = logging.getLogger('waitress')
+logger.setLevel(logging.INFO)
 
 @app.route('/start_chat', methods=['GET'])
 def start_chat():
     thread = openAiClient.beta.threads.create()
-    print(f"New chat conversation thread started: {thread.id}")
+    logger.info(f"New chat conversation thread started: {thread.id}")
 
     return jsonify({"thread_id": thread.id})
 
@@ -26,7 +29,7 @@ def chat_message():
     if thread_id is None:
         return jsonify({"error": "Missing thread_id"}), 400
 
-    print(f"[NEW MESSAGE][THREAD {thread_id}] {user_input}")
+    logger.info(f"[NEW MESSAGE][THREAD {thread_id}] {user_input}")
 
     run, thread_id = openAiHelper.process_message(user_input, thread_id)
 
@@ -36,7 +39,7 @@ def chat_message():
 @app.route('/delay', methods=['GET'])
 def delay():
     delay_seconds = 3
-    print(f"[API DELAY] Delaying for {delay_seconds} seconds...")
+    logger.info(f"[API DELAY] Delaying for {delay_seconds} seconds...")
     sleep(delay_seconds)
     return jsonify({"delay": delay_seconds})
 
@@ -47,7 +50,7 @@ def get_run():
     thread_id = data.get('thread_id')
     run_id = data.get('run_id')
 
-    print(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
+    logger.info(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
 
     if not thread_id or not run_id:
         return jsonify({"response": "Thread or Run ID is missing"}), 400
@@ -68,7 +71,7 @@ def background_run():
     thread_id = data.get('thread_id')
     run_id = data.get('run_id')
 
-    print(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
+    logger.info(f"[GET RUN][THREAD {thread_id}][RUN {run_id}]")
 
     if not thread_id or not run_id:
         return jsonify({"response": "Thread or Run ID is missing"}), 200
@@ -87,4 +90,5 @@ def background_run():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 8080))
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=os.environ.get('PORT', 8080))

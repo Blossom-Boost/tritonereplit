@@ -1,3 +1,4 @@
+import logging
 import time
 
 from openai import OpenAI, NotFoundError
@@ -9,6 +10,9 @@ from openai.types.beta.threads import Run
 import helpers.cloud_tasks
 from helpers.instructions import instructions
 from helpers.tools import Tools
+
+logger = logging.getLogger('waitress')
+logger.setLevel(logging.INFO)
 
 OPENAI_API_KEY = os.environ['OPENAI_API_KEY']  # Requires access to the GPT 4 API
 
@@ -71,7 +75,7 @@ class OpenAIHelper:
                                                      role="user",
                                                      content=input)
         except NotFoundError as notFound:
-            print(
+            logger.info(
                 f"[CLIENT THREAD][THREAD {thread_id}] Thread not found: {notFound}, creating new thread"
             )
             thread = self.client.beta.threads.create()
@@ -80,13 +84,13 @@ class OpenAIHelper:
         run = self.client.beta.threads.runs.create(thread_id=thread_id,
                                                    assistant_id=self.assistant_id)
 
-        print(
+        logger.info(
             f"[MESSAGE RUN][THREAD {thread_id}][RUN {run.id}] Generate new Run to process message"
         )
 
         helpers.cloud_tasks.bot_start_processing_run(thread_id, run.id)
 
-        print(
+        logger.info(
             f"[MESSAGE PROCESSING][THREAD {thread_id}][RUN {run.id}] Background task started processing message"
         )
 
@@ -96,7 +100,7 @@ class OpenAIHelper:
         run = self.client.beta.threads.runs.retrieve(run_id=run_id,
                                                      thread_id=thread_id)
 
-        print(
+        logger.info(
             f"[RETRIEVE RUN][THREAD {thread_id}][RUN {run.id}] Run status {run.status}"
         )
         return run
@@ -134,7 +138,7 @@ class OpenAIHelper:
             message = self.convert_thread_messages_to_message(
                 thread_messages=thread_messages).value
 
-            print(f"[DEBUG COMPLETED] {message}")
+            logger.info(f"[DEBUG COMPLETED] {message}")
 
             return "completed", message
 
@@ -148,7 +152,7 @@ class OpenAIHelper:
             return "processing", "not_completed"
 
         if run.status == 'failed':
-            print(f"[RUN FAILED][THREAD {run.thread_id}][RUN {run.id}] {run}")
+            logger.info(f"[RUN FAILED][THREAD {run.thread_id}][RUN {run.id}] {run}")
             return "error", "Não consegui processar sua mensagem."
 
         return "error", "Não consegui processar sua mensagem."
