@@ -17,7 +17,6 @@ logger.setLevel(logging.INFO)
 
 OPENAI_API_KEY = os.environ['OPENAI_API_KEY']  # Requires access to the GPT 4 API
 
-
 class OpenAIHelper:
     client = None
     assistant_id = None
@@ -47,7 +46,8 @@ class OpenAIHelper:
             instructions=instructions,
             model="gpt-4-1106-preview",
             tools=self.tools.registered,
-            file_ids=[knowledge_base.id])
+            file_ids=[knowledge_base.id]
+        )
 
         with open(self.assistant_file_path, 'w') as file:
             json.dump({'assistant_id': assistant.id}, file)

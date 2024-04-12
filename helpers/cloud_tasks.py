@@ -11,7 +11,7 @@ from google.protobuf import duration_pb2, timestamp_pb2
 TASK_PROJECT_ID = os.getenv('PROJECT_ID', 'blossom-419321')
 TASK_LOCATION = os.getenv('TASK_LOCATION', 'us-central1')
 TASK_QUEUE = os.getenv('TASK_QUEUE', 'automations-queue')
-SERVICE_URL = os.getenv('SERVICE_URL', 'https://tritone-oygb22tp6q-uc.a.run.app')
+SERVICE_URL = os.getenv('SERVICE_URL', 'https://4d25-200-162-235-42.ngrok-free.app')
 
 
 client = CloudTasksClient()
