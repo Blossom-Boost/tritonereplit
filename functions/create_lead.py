@@ -16,7 +16,7 @@ def create_lead_reference():
                            "Lead phone number, including country code", True),
                   ("email", "string", "Email address of the lead user", True))
 
-    return (tool_name, tool_description, properties, create_lead)
+    return tool_name, tool_description, properties, create_lead
 
 
 def create_lead(tool_request):

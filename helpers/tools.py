@@ -14,7 +14,7 @@ class Tools:
 
     def register_tools(self):
         default = {
-            "type": "function"
+            "type": "retrieval"
         }
 
         self.registered.append(default)
