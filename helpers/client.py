@@ -89,7 +89,7 @@ class OpenAIHelper:
             f"[MESSAGE RUN][THREAD {thread_id}][RUN {run.id}] Generate new Run to process message"
         )
 
-        helpers.cloud_tasks.bot_start_processing_run(thread_id, run.id)
+        # helpers.cloud_tasks.bot_start_processing_run(thread_id, run.id)
 
         logger.info(
             f"[MESSAGE PROCESSING][THREAD {thread_id}][RUN {run.id}] Background task started processing message"

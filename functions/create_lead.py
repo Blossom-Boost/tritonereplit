@@ -1,6 +1,6 @@
 import logging
 
-import modules.airtable_module
+import modules.agendor_module
 
 logger = logging.getLogger('waitress')
 logger.setLevel(logging.INFO)
@@ -20,9 +20,10 @@ def create_lead_reference():
 
 
 def create_lead(tool_request):
+    logger.info("Saving new client on Agendor...");
     logger.info(tool_request)
 
-    airtableClient = modules.airtable_module.AirtableModule()
-    airtableClient.create_record("Leads", tool_request)
+    agendor_client = modules.agendor_module.AgendorModule()
+    agendor_client.save_new_client(tool_request.get("name"), tool_request.get("email"), tool_request.get("phone"))
 
     return True, "Daora"
