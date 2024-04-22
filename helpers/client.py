@@ -71,6 +71,9 @@ class OpenAIHelper:
         return self.assistant_id
 
     def process_message(self, input, thread_id):
+        if input == '/clear_thread':
+            thread_id = f'CLEAR_{thread_id}'
+
         try:
             self.client.beta.threads.messages.create(thread_id=thread_id,
                                                      role="user",
@@ -89,7 +92,7 @@ class OpenAIHelper:
             f"[MESSAGE RUN][THREAD {thread_id}][RUN {run.id}] Generate new Run to process message"
         )
 
-        # helpers.cloud_tasks.bot_start_processing_run(thread_id, run.id)
+        helpers.cloud_tasks.bot_start_processing_run(thread_id, run.id)
 
         logger.info(
             f"[MESSAGE PROCESSING][THREAD {thread_id}][RUN {run.id}] Background task started processing message"

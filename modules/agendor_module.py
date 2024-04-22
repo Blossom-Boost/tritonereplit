@@ -22,10 +22,12 @@ class AgendorModule(Session):
 
     def save_new_client(self, name: str, email: str, phone: str):
         return self.post(
-            "/v3/people",
+            "/v3/people/upsert",
             json={
                 "name": name,
-                "email": email,
-                "phone": phone,
+                "contact": {
+                    "email": email,
+                    "mobile": phone,
+                }
             },
         )
