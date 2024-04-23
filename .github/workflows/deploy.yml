@@ -24,10 +24,6 @@ jobs:
           pip install poetry==1.8.2
           poetry install
 
-      - name: Delete assistant.json
-        run: |
-          rm assistant.json
-          
       - name: Setup environment secrets
         env:
           SECRETS: ${{ secrets.ENVIRONMENT_SECRETS }}
