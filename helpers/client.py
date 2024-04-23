@@ -39,7 +39,7 @@ class OpenAIHelper:
 
     def create_assistant(self):
         knowledge_base = self.client.files.create(file=open(
-            "knowledge_base.txt", "rb"),
+            "knowledge_base.json", "rb"),
             purpose='assistants')
 
         assistant = self.client.beta.assistants.create(
