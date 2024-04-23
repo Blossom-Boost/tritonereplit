@@ -30,11 +30,6 @@ jobs:
         run: |
             echo "${SECRETS}" > .env
 
-      - name: Setup app
-        run: |
-          export $(grep -v '^#' .env | xargs)
-          poetry run python setup.py
-
       - name: Google Auth
         id: auth
         uses: 'google-github-actions/auth@v2'
@@ -42,6 +37,11 @@ jobs:
           token_format: 'access_token'
           workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
           service_account: '${{ secrets.GCP_WIF_SA_EMAIL }}'
+
+      - name: Setup app
+        run: |
+          export $(grep -v '^#' .env | xargs)
+          poetry run python setup.py
 
       - name: Docker Auth
         id: docker-auth
