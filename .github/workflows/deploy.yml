@@ -34,12 +34,6 @@ jobs:
         run: |
             echo "${SECRETS}" > .env
 
-      - name: Setup environment secrets on .env.yaml
-        env:
-          SECRETS_YAML: ${{ secrets.ENVIRONMENT_SECRETS_YAML }}
-        run: |
-          echo "${SECRETS_YAML}" > .env.yaml
-
       - name: Google Auth
         id: auth
         uses: 'google-github-actions/auth@v2'
@@ -86,5 +80,6 @@ jobs:
         with:
           service: ${{ vars.SERVICE_NAME }}
           region: ${{ vars.REGION }}
-          env_vars_file: '.env.yaml'
+          env_vars: |
+            ${{ secrets.ENVIRONMENT_SECRETS_GCP_RUN }}
           metadata: container-${{ inputs.environment }}.yaml
