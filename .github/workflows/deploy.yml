@@ -1,0 +1,83 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry==1.8.2
+          poetry install
+
+      - name: Delete assistant.json
+        run: |
+          rm assistant.json
+          
+      - name: Setup environment secrets
+        env:
+          SECRETS: ${{ secrets.ENVIRONMENT_SECRETS }}
+        run: |
+            echo "${SECRETS}" > .env
+
+      - name: Setup app
+        run: |
+          export $(grep -v '^#' .env | xargs)
+          poetry run python setup.py
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.GCP_WIF_PROVIDER }}'
+          service_account: '${{ secrets.GCP_WIF_SA_EMAIL }}'
+
+      - name: Docker Auth
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ vars.REGION }}-docker.pkg.dev'
+
+      - name: Build, tag and push container
+        id: build-image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: |
+            ${{ vars.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ORGANIZATION_NAME }}/${{ vars.SERVICE_NAME }}:${{ inputs.ref }}
+
+      - name: Create Service declaration
+        run: |-
+          export CONTAINER_IMAGE="${{ vars.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ORGANIZATION_NAME }}/${{ vars.SERVICE_NAME }}:${{ inputs.ref }}"
+          export SERVICE_NAME="${{ vars.SERVICE_NAME }}"
+          export PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          export REVISION_TAG="${{ inputs.ref }}"
+          export CLOUD_RUN_SA="${{ secrets.GCP_CLOUD_RUN_SA_EMAIL }}"
+          export ENVIRONMENT="${{ inputs.environment }}"
+          envsubst < ./service-yaml/container.yaml > container-${{ inputs.environment }}.yaml
+          cat container-${{ inputs.environment }}.yaml
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ vars.SERVICE_NAME }}
+          region: ${{ vars.REGION }}
+          metadata: container-${{ inputs.environment }}.yaml
