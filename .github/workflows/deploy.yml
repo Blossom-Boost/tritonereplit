@@ -63,17 +63,6 @@ jobs:
           tags: |
             ${{ vars.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ORGANIZATION_NAME }}/${{ vars.SERVICE_NAME }}:latest
 
-#      - name: Create Service declaration
-#        run: |-
-#          export CONTAINER_IMAGE="${{ vars.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ORGANIZATION_NAME }}/${{ vars.SERVICE_NAME }}:latest"
-#          export SERVICE_NAME="${{ vars.SERVICE_NAME }}"
-#          export PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-#          export REVISION_TAG="${{ inputs.ref }}"
-#          export CLOUD_RUN_SA="${{ secrets.GCP_CLOUD_RUN_SA_EMAIL }}"
-#          export ENVIRONMENT="${{ inputs.environment }}"
-#          envsubst < ./service-yaml/container.yaml > container-${{ inputs.environment }}.yaml
-#          cat container-${{ inputs.environment }}.yaml
-
       - name: Deploy to Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
@@ -82,4 +71,4 @@ jobs:
           region: ${{ vars.REGION }}
           image: ${{ vars.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ vars.ORGANIZATION_NAME }}/${{ vars.SERVICE_NAME }}:latest
           env_vars: |
-            ${{ secrets.ENVIRONMENT_SECRETS_GCP_RUN }}
+            ${{ secrets.ENVIRONMENT_SECRETS }}
