@@ -1,4 +1,9 @@
+import logging
+
 import functions.create_lead
+
+logger = logging.getLogger('waitress')
+logger.setLevel(logging.INFO)
 
 class Tools:
     registered = []
