@@ -8,12 +8,12 @@ logger.setLevel(logging.INFO)
 
 def create_lead_reference():
     tool_name = "create_lead"
-    tool_description = "Capture lead details of the user."
+    tool_description = "After collecting the data, save using this function"
 
     # Example of properties ((name of property, type, description, required True or False))
     properties = (("name", "string", "Full name of the lead user",
                    True), ("phone", "string",
-                           "Lead phone number, including country code", True),
+                           "Lead phone number, including the local code (Phone has to be an Brazilian Phone with local code, between 10 to 11 digits (2 for local code)) and only digits", True),
                   ("email", "string", "Email address of the lead user", True))
 
     return tool_name, tool_description, properties, create_lead
