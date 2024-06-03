@@ -20,7 +20,7 @@ def create_lead_reference():
 
 
 def create_lead(tool_request):
-    logger.info("Saving new client on Agendor...");
+    logger.info("Saving new client on Agendor...")
     logger.info(tool_request)
 
     agendor_client = modules.agendor_module.AgendorModule()
